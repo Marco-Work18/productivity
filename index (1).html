@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRIO — Three a Day</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0e10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Hanken Grotesk',sans-serif;background:#0d0e10;color:#f4f5f6;}
+input::placeholder{color:#5a5d63;}
+input{font-family:inherit;}
+
+.app{height:100vh;display:flex;}
+
+/* ---- Sidebar ---- */
+.sidebar{
+  width:248px;flex:0 0 248px;background:#101113;
+  border-right:1px solid rgba(255,255,255,0.06);
+  padding:26px 20px;display:flex;flex-direction:column;gap:28px;
+  overflow-y:auto;
+}
+.sidebar::-webkit-scrollbar{width:6px;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px;}
+.sidebar::-webkit-scrollbar-track{background:transparent;}
+
+.logo{display:flex;align-items:center;gap:11px;}
+.logo-icon{
+  width:32px;height:32px;border-radius:9px;background:#c4f82a;
+  display:flex;align-items:center;justify-content:center;
+  color:#0d0e10;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+}
+.logo-text{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:17px;color:#f4f5f6;letter-spacing:.02em;}
+.logo-sub{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#6b6e74;}
+
+.nav{display:flex;flex-direction:column;gap:3px;}
+.nav-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;border-radius:10px;cursor:pointer;
+  background:transparent;transition:background .15s;
+}
+.nav-item:hover{background:rgba(255,255,255,0.04);}
+.nav-item.active{background:rgba(196,248,42,0.1);}
+.nav-item.active:hover{background:rgba(196,248,42,0.14);}
+.nav-label{font-size:14px;font-weight:500;color:#9a9da3;}
+.nav-item.active .nav-label{font-weight:600;color:#c4f82a;}
+.nav-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:#6b6e74;}
+.nav-item.active .nav-count{color:#c4f82a;}
+
+.sidebar-section-title{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:#6b6e74;margin-bottom:8px;padding-left:2px;
+}
+.sidebar-projects{display:flex;flex-direction:column;gap:2px;}
+.sidebar-project{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;}
+.sidebar-project:hover{background:rgba(255,255,255,0.04);}
+.sidebar-project-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;}
+.sidebar-project-name{font-size:13px;color:#c5c8cd;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sidebar-project-count{font-family:'JetBrains Mono',monospace;font-size:11px;color:#6b6e74;}
+
+.streak{margin-top:auto;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;}
+.streak-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6b6e74;margin-bottom:8px;}
+.streak-row{display:flex;align-items:baseline;gap:7px;}
+.streak-num{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:#f4f5f6;}
+.streak-label{font-size:12px;color:#9a9da3;}
+
+/* ---- Main ---- */
+.main{flex:1;min-width:0;overflow-y:auto;padding:38px 44px;}
+.main::-webkit-scrollbar{width:9px;}
+.main::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:5px;}
+.main::-webkit-scrollbar-track{background:transparent;}
+.main-inner{max-width:780px;margin:0 auto;}
+
+/* ---- Shared ---- */
+.section-date{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b6e74;}
+.section-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:24px;color:#f4f5f6;margin-top:4px;}
+.section-header{margin-bottom:24px;}
+
+/* ---- Goal Card ---- */
+.goal-card{
+  background:#131517;border:1px solid rgba(255,255,255,0.07);
+  border-radius:18px;padding:28px 30px;margin-bottom:24px;
+}
+.goal-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b6e74;margin-bottom:16px;}
+.goal-numbers{display:flex;align-items:flex-end;gap:16px;}
+.goal-done{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:76px;line-height:.82;color:#f4f5f6;}
+.goal-total{font-family:'Space Grotesk',sans-serif;font-weight:500;font-size:32px;color:#5a5d63;margin-bottom:9px;}
+.goal-segments{display:flex;gap:8px;margin-top:24px;}
+.goal-segment{flex:1;height:12px;border-radius:7px;transition:background .25s;}
+.goal-sub{font-size:14px;color:#9a9da3;margin-top:15px;}
+
+/* ---- Quick Add ---- */
+.quick-add{
+  display:flex;align-items:center;gap:12px;
+  background:#16181b;border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:12px 15px;margin-bottom:24px;
+}
+.quick-add-plus{color:#c4f82a;font-size:20px;line-height:1;flex:0 0 auto;}
+.quick-add input{
+  flex:1;min-width:0;background:transparent;border:none;outline:none;
+  color:#f4f5f6;font-size:15px;
+}
+.project-options{display:flex;gap:6px;flex:0 0 auto;}
+.project-chip{
+  cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;
+  border-radius:6px;border:1px solid rgba(255,255,255,0.12);
+  color:#9a9da3;background:transparent;white-space:nowrap;
+  transition:all .15s;
+}
+.project-chip.active{border-color:#c4f82a;color:#c4f82a;background:rgba(196,248,42,0.08);}
+
+/* ---- Task Rows ---- */
+.task-list-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#6b6e74;margin-bottom:6px;}
+.task-row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 2px;border-bottom:1px solid rgba(255,255,255,0.05);
+}
+.task-checkbox{
+  width:22px;height:22px;border-radius:7px;
+  border:1.5px solid rgba(255,255,255,0.22);
+  background:transparent;display:flex;align-items:center;justify-content:center;
+  flex:0 0 auto;cursor:pointer;transition:all .15s;
+}
+.task-checkbox.checked{border-color:#c4f82a;background:#c4f82a;}
+.task-check{opacity:0;color:#0d0e10;font-size:12px;font-weight:800;line-height:1;user-select:none;}
+.task-checkbox.checked .task-check{opacity:1;}
+.task-content{flex:1;min-width:0;}
+.task-title{
+  font-size:15px;font-weight:500;color:#f4f5f6;cursor:pointer;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.task-title.done{color:#63666c;text-decoration:line-through;}
+.task-edit-input{
+  width:100%;background:#1c1f22;border:1px solid rgba(196,248,42,0.5);
+  border-radius:7px;padding:6px 10px;color:#f4f5f6;font-size:15px;outline:none;
+}
+.task-pill{
+  display:inline-flex;font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.05em;text-transform:uppercase;color:#9a9da3;
+  border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:3px 7px;
+  white-space:nowrap;flex:0 0 auto;
+}
+.task-due{font-family:'JetBrains Mono',monospace;font-size:11px;color:#6b6e74;min-width:60px;text-align:right;}
+.task-delete{
+  cursor:pointer;color:#3a3d42;font-size:13px;width:18px;text-align:center;
+  flex:0 0 auto;transition:color .15s;user-select:none;
+}
+.task-delete:hover{color:#ff6a45;}
+
+.empty-state{text-align:center;padding:36px;color:#6b6e74;font-size:14px;}
+
+/* ---- Upcoming groups ---- */
+.upcoming-group{margin-bottom:22px;}
+.upcoming-group-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#c4f82a;margin-bottom:4px;}
+
+/* ---- Project Cards ---- */
+.project-card{
+  background:#131517;border:1px solid rgba(255,255,255,0.07);
+  border-radius:16px;padding:22px 24px;margin-bottom:20px;
+}
+.project-card-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.project-card-dot{width:12px;height:12px;border-radius:50%;flex:0 0 auto;cursor:pointer;}
+.project-card-name{
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;
+  color:#f4f5f6;cursor:pointer;flex:1;min-width:0;
+}
+.project-card-edit{
+  background:#1c1f22;border:1px solid rgba(196,248,42,0.5);border-radius:7px;
+  padding:5px 10px;color:#f4f5f6;font-family:'Space Grotesk',sans-serif;
+  font-weight:600;font-size:17px;outline:none;width:70%;
+}
+.project-card-stats{font-family:'JetBrains Mono',monospace;font-size:11px;color:#9a9da3;white-space:nowrap;}
+.project-card-delete{
+  cursor:pointer;color:#3a3d42;font-size:14px;width:20px;text-align:center;
+  transition:color .15s;user-select:none;
+}
+.project-card-delete:hover{color:#ff6a45;}
+.project-progress{height:8px;border-radius:5px;background:rgba(255,255,255,0.07);overflow:hidden;margin-bottom:8px;}
+.project-progress-fill{height:100%;background:#c4f82a;border-radius:5px;transition:width .3s;}
+
+.add-project-bar{
+  display:flex;align-items:center;gap:12px;
+  background:#16181b;border:1px dashed rgba(255,255,255,0.14);
+  border-radius:12px;padding:12px 15px;
+}
+.add-project-bar input{
+  flex:1;min-width:0;background:transparent;border:none;outline:none;
+  color:#f4f5f6;font-size:15px;
+}
+.add-project-btn{
+  cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:#c4f82a;border:1px solid rgba(196,248,42,0.4);border-radius:6px;
+  padding:5px 11px;background:transparent;transition:all .15s;
+}
+.add-project-btn:hover{background:rgba(196,248,42,0.1);}
+
+/* ---- Hidden ---- */
+.hidden{display:none!important;}
+
+/* ---- Mobile hamburger ---- */
+.mobile-header{
+  display:none;
+  align-items:center;gap:14px;
+  padding:16px 20px;background:#101113;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  flex:0 0 auto;
+}
+.hamburger{
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border-radius:8px;background:transparent;border:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger:active{background:rgba(255,255,255,0.08);}
+.hamburger span{display:block;width:20px;height:2px;background:#f4f5f6;border-radius:1px;
+  position:relative;}
+.hamburger span::before,.hamburger span::after{
+  content:'';position:absolute;left:0;width:100%;height:2px;background:#f4f5f6;border-radius:1px;
+}
+.hamburger span::before{top:-6px;}
+.hamburger span::after{top:6px;}
+.mobile-header .logo{flex:1;}
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;z-index:99;background:rgba(0,0,0,0.6);
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ---- Mobile ---- */
+@media(max-width:768px){
+  .app{flex-direction:column;}
+  .sidebar{
+    display:none;position:fixed;top:0;left:0;bottom:0;width:280px;z-index:100;
+    padding-top:20px;
+  }
+  .sidebar.open{display:flex;}
+  .sidebar-overlay.open{display:block;}
+  .mobile-header{display:flex;}
+  .main{padding:20px 16px;}
+  .main-inner{max-width:100%;}
+  .section-title{font-size:20px;}
+  .goal-card{padding:20px;border-radius:14px;}
+  .goal-done{font-size:56px;}
+  .goal-total{font-size:24px;margin-bottom:6px;}
+  .goal-segments{margin-top:18px;}
+  .goal-segment{height:10px;}
+  .quick-add{padding:10px 12px;gap:10px;}
+  .project-options{flex-wrap:wrap;}
+  .task-row{gap:10px;padding:12px 2px;}
+  .task-pill{font-size:9px;padding:2px 5px;}
+  .task-due{min-width:50px;font-size:10px;}
+  .task-delete{width:28px;font-size:16px;padding:4px 0;}
+  .project-card{padding:16px 18px;border-radius:14px;}
+  .project-card-header{flex-wrap:wrap;gap:8px;}
+  .project-card-stats{font-size:10px;}
+  .add-project-bar{padding:10px 12px;}
+}
+@media(max-width:400px){
+  .goal-done{font-size:48px;}
+  .goal-total{font-size:20px;}
+  .project-options{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app"></div>
+
+<script>
+const STORAGE_KEY = 'trio.app.v2';
+const PALETTE = ['#c4f82a','#9aa0a6','#5f6469','#7fb0ff','#ff9b73','#c9a8ff','#6ee7b7'];
+
+const DEFAULT_TASKS = [
+  {id:1, title:'Send Q3 proposal to Henderson Co.', project:'Freelance', due:'2:00 PM', when:'today', done:false},
+  {id:2, title:'Reconcile May invoices', project:'Admin', due:'5:00 PM', when:'today', done:false},
+  {id:3, title:'Prep client onboarding deck', project:'Business', due:'4:30 PM', when:'today', done:false},
+  {id:4, title:'Reply to vendor contract email', project:'Admin', due:'done', when:'today', done:true},
+  {id:5, title:'Follow up: Marlow retainer', project:'Freelance', due:'Tomorrow', when:'upcoming', done:false},
+  {id:6, title:'Update portfolio site copy', project:'Freelance', due:'Wed', when:'upcoming', done:false},
+  {id:7, title:'Submit Q2 expense report', project:'Admin', due:'Fri', when:'upcoming', done:false},
+];
+
+const DEFAULT_PROJECTS = [
+  {id:1, name:'Business', color:'#c4f82a'},
+  {id:2, name:'Freelance', color:'#9aa0a6'},
+  {id:3, name:'Admin', color:'#5f6469'},
+];
+
+let state = {
+  tasks: DEFAULT_TASKS,
+  projects: DEFAULT_PROJECTS,
+  nextId: 8,
+  nextProjId: 4,
+  view: 'today',
+  draft: '',
+  draftProject: 'Business',
+  editingTaskId: null,
+  taskEditDraft: '',
+  editingProjId: null,
+  projEditDraft: '',
+  newProjDraft: '',
+  goal: 3,
+  sidebarOpen: false,
+};
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (Array.isArray(d.tasks) && d.tasks.length) {
+      state.tasks = d.tasks;
+      state.nextId = Math.max(...d.tasks.map(t => t.id)) + 1;
+    }
+    if (Array.isArray(d.projects) && d.projects.length) {
+      state.projects = d.projects;
+      state.nextProjId = Math.max(...d.projects.map(p => p.id)) + 1;
+      state.draftProject = d.projects[0].name;
+    }
+  } catch(e) {}
+}
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks: state.tasks, projects: state.projects })); } catch(e) {}
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function setView(v) { state.view = v; render(); }
+
+function toggleTask(id) {
+  state.tasks = state.tasks.map(t => t.id === id ? {...t, done: !t.done} : t);
+  save(); render();
+}
+
+function deleteTask(id) {
+  state.tasks = state.tasks.filter(t => t.id !== id);
+  if (state.editingTaskId === id) { state.editingTaskId = null; state.taskEditDraft = ''; }
+  save(); render();
+}
+
+function startEditTask(id, title) {
+  state.editingTaskId = id;
+  state.taskEditDraft = title;
+  render();
+  const el = document.getElementById('task-edit-' + id);
+  if (el) { el.focus(); el.select(); }
+}
+
+function commitEditTask(id) {
+  const v = (state.taskEditDraft || '').trim();
+  if (v) state.tasks = state.tasks.map(t => t.id === id ? {...t, title: v} : t);
+  state.editingTaskId = null;
+  state.taskEditDraft = '';
+  save(); render();
+}
+
+function cancelEditTask() {
+  state.editingTaskId = null;
+  state.taskEditDraft = '';
+  render();
+}
+
+function addTask() {
+  const v = (state.draft || '').trim();
+  if (!v) return;
+  const when = state.view === 'upcoming' ? 'upcoming' : 'today';
+  const due = when === 'upcoming' ? 'Soon' : 'Today';
+  const proj = state.projects.some(p => p.name === state.draftProject) ? state.draftProject : (state.projects[0] ? state.projects[0].name : '');
+  state.tasks = [{id: state.nextId, title: v, project: proj, due, when, done: false}, ...state.tasks];
+  state.nextId++;
+  state.draft = '';
+  save(); render();
+  const input = document.getElementById('quick-add-input');
+  if (input) input.focus();
+}
+
+function addProject() {
+  const v = (state.newProjDraft || '').trim();
+  if (!v) return;
+  const color = PALETTE[state.projects.length % PALETTE.length];
+  state.projects = [...state.projects, {id: state.nextProjId, name: v, color}];
+  state.nextProjId++;
+  state.newProjDraft = '';
+  save(); render();
+}
+
+function deleteProject(id) {
+  const p = state.projects.find(x => x.id === id);
+  state.projects = state.projects.filter(x => x.id !== id);
+  const fallback = state.projects.length ? state.projects[0].name : '';
+  if (p) state.tasks = state.tasks.map(t => t.project === p.name ? {...t, project: fallback} : t);
+  if (p && state.draftProject === p.name) state.draftProject = fallback;
+  save(); render();
+}
+
+function cycleProjColor(id) {
+  state.projects = state.projects.map(p => {
+    if (p.id !== id) return p;
+    let i = PALETTE.indexOf(p.color);
+    i = (i + 1) % PALETTE.length;
+    return {...p, color: PALETTE[i]};
+  });
+  save(); render();
+}
+
+function startEditProj(id, name) {
+  state.editingProjId = id;
+  state.projEditDraft = name;
+  render();
+  const el = document.getElementById('proj-edit-' + id);
+  if (el) { el.focus(); el.select(); }
+}
+
+function commitEditProj(id) {
+  const v = (state.projEditDraft || '').trim();
+  if (v) {
+    const old = state.projects.find(p => p.id === id);
+    const oldName = old ? old.name : null;
+    state.projects = state.projects.map(p => p.id === id ? {...p, name: v} : p);
+    if (oldName) state.tasks = state.tasks.map(t => t.project === oldName ? {...t, project: v} : t);
+    if (state.draftProject === oldName) state.draftProject = v;
+  }
+  state.editingProjId = null;
+  state.projEditDraft = '';
+  save(); render();
+}
+
+function projOpenCount(name) { return state.tasks.filter(t => t.project === name && !t.done).length; }
+
+function renderTaskRow(t, opts) {
+  const editing = state.editingTaskId === t.id;
+  const checkedClass = t.done ? ' checked' : '';
+  const titleClass = t.done ? ' done' : '';
+
+  let titleHtml;
+  if (editing) {
+    titleHtml = `<input id="task-edit-${t.id}" class="task-edit-input" value="${esc(state.taskEditDraft)}"
+      data-action="task-edit" data-task-id="${t.id}" />`;
+  } else {
+    titleHtml = `<div class="task-title${titleClass}" data-action="start-edit-task" data-task-id="${t.id}" data-task-title="${esc(t.title)}">${esc(t.title)}</div>`;
+  }
+
+  const pillHtml = opts.showPill !== false ? `<span class="task-pill">${esc(t.project)}</span>` : '';
+  const dueHtml = opts.showDue !== false ? `<span class="task-due">${esc(t.due)}</span>` : '';
+
+  return `<div class="task-row">
+    <div class="task-checkbox${checkedClass}" data-action="toggle-task" data-task-id="${t.id}"><span class="task-check">✓</span></div>
+    <div class="task-content">${titleHtml}</div>
+    ${pillHtml}${dueHtml}
+    <span class="task-delete" data-action="delete-task" data-task-id="${t.id}">✕</span>
+  </div>`;
+}
+
+function renderQuickAdd(placeholder) {
+  const projChips = state.projects.map(p => {
+    const active = state.draftProject === p.name ? ' active' : '';
+    return `<span class="project-chip${active}" data-action="set-draft-project" data-name="${esc(p.name)}">${esc(p.name)}</span>`;
+  }).join('');
+
+  return `<div class="quick-add">
+    <span class="quick-add-plus">+</span>
+    <input id="quick-add-input" placeholder="${placeholder}" value="${esc(state.draft)}" data-action="draft-input" />
+    <div class="project-options">${projChips}</div>
+  </div>`;
+}
+
+function renderToday() {
+  const today = state.tasks.filter(t => t.when === 'today');
+  const doneToday = today.filter(t => t.done).length;
+  const goal = state.goal;
+  const remaining = Math.max(0, goal - doneToday);
+  const reached = doneToday >= goal;
+  const subText = reached ? 'Goal cleared — anything now is a bonus.' : (remaining + (remaining === 1 ? ' task to hit your three.' : ' tasks to hit your three.'));
+
+  const now = new Date();
+  const dateLine = now.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long'});
+  const h = now.getHours();
+  const greeting = (h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening') + ', Alex';
+
+  let segments = '';
+  for (let i = 0; i < goal; i++) {
+    const bg = i < doneToday ? '#c4f82a' : 'rgba(255,255,255,0.08)';
+    segments += `<div class="goal-segment" style="background:${bg}"></div>`;
+  }
+
+  const taskRows = today.length > 0
+    ? today.map(t => renderTaskRow(t, {showPill: true, showDue: true})).join('')
+    : `<div class="empty-state">Clear for now — add a task above to get started.</div>`;
+
+  return `<div>
+    <div class="section-header">
+      <div class="section-date">${esc(dateLine)}</div>
+      <div class="section-title">${esc(greeting)}</div>
+    </div>
+    <div class="goal-card">
+      <div class="goal-label">Daily goal</div>
+      <div class="goal-numbers">
+        <div class="goal-done">${doneToday}</div>
+        <div class="goal-total">/ ${goal}</div>
+      </div>
+      <div class="goal-segments">${segments}</div>
+      <div class="goal-sub">${esc(subText)}</div>
+    </div>
+    ${renderQuickAdd('Quick add — type a task, press Enter')}
+    <div>
+      <div class="task-list-label">Today's tasks · click to edit</div>
+      ${taskRows}
+    </div>
+  </div>`;
+}
+
+function renderUpcoming() {
+  const upcoming = state.tasks.filter(t => t.when === 'upcoming' && !t.done);
+  const groups = {};
+  const order = [];
+  upcoming.forEach(t => {
+    if (!groups[t.due]) { groups[t.due] = []; order.push(t.due); }
+    groups[t.due].push(t);
+  });
+
+  let groupsHtml = '';
+  if (upcoming.length > 0) {
+    groupsHtml = order.map(label => {
+      const rows = groups[label].map(t => renderTaskRow(t, {showPill: true, showDue: false})).join('');
+      return `<div class="upcoming-group">
+        <div class="upcoming-group-label">${esc(label)}</div>
+        ${rows}
+      </div>`;
+    }).join('');
+  } else {
+    groupsHtml = `<div class="empty-state">Nothing scheduled ahead.</div>`;
+  }
+
+  return `<div>
+    <div class="section-header">
+      <div class="section-date">Scheduled ahead</div>
+      <div class="section-title">Upcoming · ${upcoming.length}</div>
+    </div>
+    ${renderQuickAdd('Add an upcoming task, press Enter')}
+    ${groupsHtml}
+  </div>`;
+}
+
+function renderProjects() {
+  const cards = state.projects.map(p => {
+    const all = state.tasks.filter(t => t.project === p.name);
+    const done = all.filter(t => t.done).length;
+    const open = all.length - done;
+    const pct = all.length ? Math.round(done / all.length * 100) : 0;
+    const editing = state.editingProjId === p.id;
+
+    let nameHtml;
+    if (editing) {
+      nameHtml = `<input id="proj-edit-${p.id}" class="project-card-edit" value="${esc(state.projEditDraft)}"
+        data-action="proj-edit" data-proj-id="${p.id}" />`;
+    } else {
+      nameHtml = `<span class="project-card-name" data-action="start-edit-proj" data-proj-id="${p.id}" data-proj-name="${esc(p.name)}">${esc(p.name)}</span>`;
+    }
+
+    const rows = all.map(t => renderTaskRow(t, {showPill: false, showDue: true})).join('');
+
+    return `<div class="project-card">
+      <div class="project-card-header">
+        <span class="project-card-dot" style="background:${p.color}" data-action="cycle-proj-color" data-proj-id="${p.id}" title="Change colour"></span>
+        <div style="flex:1;min-width:0">${nameHtml}</div>
+        <span class="project-card-stats">${open} open · ${all.length} total</span>
+        <span class="project-card-delete" data-action="delete-proj" data-proj-id="${p.id}" title="Delete project">✕</span>
+      </div>
+      <div class="project-progress"><div class="project-progress-fill" style="width:${pct}%"></div></div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  return `<div>
+    <div class="section-header">
+      <div class="section-date">Click a name to rename · the dot to recolour</div>
+      <div class="section-title">Projects</div>
+    </div>
+    ${cards}
+    <div class="add-project-bar">
+      <span class="quick-add-plus">+</span>
+      <input id="new-proj-input" placeholder="Add a project — name it, press Enter" value="${esc(state.newProjDraft)}" data-action="new-proj-input" />
+      <span class="add-project-btn" data-action="add-proj">Add</span>
+    </div>
+  </div>`;
+}
+
+function renderCompleted() {
+  const completed = state.tasks.filter(t => t.done);
+  const rows = completed.length > 0
+    ? completed.map(t => renderTaskRow(t, {showPill: true, showDue: false})).join('')
+    : `<div class="empty-state">No completed tasks yet — check one off to see it here.</div>`;
+
+  return `<div>
+    <div class="section-header">
+      <div class="section-date">Done & dusted</div>
+      <div class="section-title">Completed · ${completed.length}</div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
+function renderSidebar() {
+  const today = state.tasks.filter(t => t.when === 'today');
+  const todayOpen = today.filter(t => !t.done).length;
+  const upcoming = state.tasks.filter(t => t.when === 'upcoming' && !t.done);
+  const completed = state.tasks.filter(t => t.done);
+
+  const navItems = [
+    {key: 'today', label: 'Today', count: todayOpen},
+    {key: 'upcoming', label: 'Upcoming', count: upcoming.length},
+    {key: 'projects', label: 'Projects', count: state.projects.length},
+    {key: 'completed', label: 'Completed', count: completed.length},
+  ];
+
+  const navHtml = navItems.map(n => {
+    const active = state.view === n.key ? ' active' : '';
+    return `<div class="nav-item${active}" data-action="set-view" data-view="${n.key}">
+      <span class="nav-label">${n.label}</span>
+      <span class="nav-count">${n.count}</span>
+    </div>`;
+  }).join('');
+
+  const projHtml = state.projects.map(p => {
+    return `<div class="sidebar-project" data-action="set-view" data-view="projects">
+      <span class="sidebar-project-dot" style="background:${p.color}"></span>
+      <span class="sidebar-project-name">${esc(p.name)}</span>
+      <span class="sidebar-project-count">${projOpenCount(p.name)}</span>
+    </div>`;
+  }).join('');
+
+  return `<aside class="sidebar${state.sidebarOpen ? ' open' : ''}">
+    <div class="logo">
+      <div class="logo-icon">3</div>
+      <div>
+        <div class="logo-text">TRIO</div>
+        <div class="logo-sub">three a day</div>
+      </div>
+    </div>
+    <nav class="nav">${navHtml}</nav>
+    <div>
+      <div class="sidebar-section-title">Projects</div>
+      <div class="sidebar-projects">${projHtml}</div>
+    </div>
+    <div class="streak">
+      <div class="streak-title">Streak</div>
+      <div class="streak-row">
+        <span class="streak-num">12</span>
+        <span class="streak-label">days hitting three</span>
+      </div>
+    </div>
+  </aside>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  let mainContent;
+  switch (state.view) {
+    case 'today': mainContent = renderToday(); break;
+    case 'upcoming': mainContent = renderUpcoming(); break;
+    case 'projects': mainContent = renderProjects(); break;
+    case 'completed': mainContent = renderCompleted(); break;
+  }
+
+  const mobileHeader = `<div class="mobile-header">
+    <button class="hamburger" data-action="toggle-sidebar" aria-label="Menu"><span></span></button>
+    <div class="logo">
+      <div class="logo-icon">3</div>
+      <div>
+        <div class="logo-text">TRIO</div>
+        <div class="logo-sub">three a day</div>
+      </div>
+    </div>
+  </div>`;
+
+  app.innerHTML = `${mobileHeader}<div class="sidebar-overlay${state.sidebarOpen ? ' open' : ''}" data-action="close-sidebar"></div>${renderSidebar()}<main class="main"><div class="main-inner">${mainContent}</div></main>`;
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const action = el.dataset.action;
+  const taskId = el.dataset.taskId ? Number(el.dataset.taskId) : null;
+  const projId = el.dataset.projId ? Number(el.dataset.projId) : null;
+
+  switch (action) {
+    case 'set-view': state.sidebarOpen = false; setView(el.dataset.view); break;
+    case 'toggle-sidebar': state.sidebarOpen = !state.sidebarOpen; render(); break;
+    case 'close-sidebar': state.sidebarOpen = false; render(); break;
+    case 'toggle-task': toggleTask(taskId); break;
+    case 'delete-task': deleteTask(taskId); break;
+    case 'start-edit-task': startEditTask(taskId, el.dataset.taskTitle); break;
+    case 'set-draft-project': state.draftProject = el.dataset.name; render(); break;
+    case 'cycle-proj-color': cycleProjColor(projId); break;
+    case 'delete-proj': deleteProject(projId); break;
+    case 'start-edit-proj': startEditProj(projId, el.dataset.projName); break;
+    case 'add-proj': addProject(); break;
+  }
+});
+
+document.addEventListener('input', e => {
+  const action = e.target.dataset.action;
+  if (!action) return;
+
+  switch (action) {
+    case 'draft-input': state.draft = e.target.value; break;
+    case 'task-edit': state.taskEditDraft = e.target.value; break;
+    case 'proj-edit': state.projEditDraft = e.target.value; break;
+    case 'new-proj-input': state.newProjDraft = e.target.value; break;
+  }
+});
+
+document.addEventListener('keydown', e => {
+  const action = e.target.dataset.action;
+  if (!action) return;
+
+  if (action === 'draft-input' && e.key === 'Enter') {
+    addTask();
+  } else if (action === 'task-edit') {
+    const id = Number(e.target.dataset.taskId);
+    if (e.key === 'Enter') commitEditTask(id);
+    else if (e.key === 'Escape') cancelEditTask();
+  } else if (action === 'proj-edit') {
+    const id = Number(e.target.dataset.projId);
+    if (e.key === 'Enter') commitEditProj(id);
+    else if (e.key === 'Escape') { state.editingProjId = null; state.projEditDraft = ''; render(); }
+  } else if (action === 'new-proj-input' && e.key === 'Enter') {
+    addProject();
+  }
+});
+
+document.addEventListener('blur', e => {
+  const action = e.target.dataset.action;
+  if (!action) return;
+
+  if (action === 'task-edit') {
+    const id = Number(e.target.dataset.taskId);
+    if (state.editingTaskId === id) commitEditTask(id);
+  } else if (action === 'proj-edit') {
+    const id = Number(e.target.dataset.projId);
+    if (state.editingProjId === id) commitEditProj(id);
+  }
+}, true);
+
+load();
+render();
+</script>
+</body>
+</html>

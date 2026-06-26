@@ -95,6 +95,86 @@ input{font-family:inherit;}
 .goal-segment{flex:1;height:12px;border-radius:7px;transition:background .25s;}
 .goal-sub{font-size:14px;color:#9a9da3;margin-top:15px;}
 
+/* ---- Schedule ---- */
+.sched-section{margin-bottom:28px;}
+.sched-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+.sched-card{
+  background:#131517;border:1px solid rgba(255,255,255,0.07);
+  border-radius:14px;padding:18px 20px;display:flex;align-items:center;gap:16px;
+  transition:border-color .2s;
+}
+.sched-card.running{border-color:rgba(196,248,42,0.35);}
+.sched-card.finished{border-color:rgba(196,248,42,0.5);opacity:0.7;}
+.sched-ring{flex:0 0 auto;position:relative;width:52px;height:52px;}
+.sched-ring svg{transform:rotate(-90deg);}
+.sched-ring-time{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:#f4f5f6;
+}
+.sched-card.finished .sched-ring-time{color:#c4f82a;}
+.sched-info{flex:1;min-width:0;}
+.sched-title{font-size:15px;font-weight:500;color:#f4f5f6;margin-bottom:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sched-card.finished .sched-title{color:#63666c;text-decoration:line-through;}
+.sched-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:#6b6e74;
+  text-transform:uppercase;letter-spacing:.05em;}
+.sched-actions{display:flex;gap:8px;flex:0 0 auto;}
+.sched-btn{
+  width:34px;height:34px;border-radius:9px;border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;font-size:14px;
+  -webkit-tap-highlight-color:transparent;
+}
+.sched-btn-play{background:rgba(196,248,42,0.15);color:#c4f82a;}
+.sched-btn-play:hover{background:rgba(196,248,42,0.25);}
+.sched-btn-pause{background:rgba(255,155,115,0.15);color:#ff9b73;}
+.sched-btn-pause:hover{background:rgba(255,155,115,0.25);}
+.sched-btn-reset{background:rgba(255,255,255,0.06);color:#6b6e74;}
+.sched-btn-reset:hover{background:rgba(255,255,255,0.1);color:#9a9da3;}
+.sched-btn-del{background:transparent;color:#3a3d42;font-size:13px;}
+.sched-btn-del:hover{color:#ff6a45;}
+
+.sched-add{
+  display:flex;align-items:center;gap:10px;
+  background:#16181b;border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:10px 14px;flex-wrap:wrap;
+}
+.sched-add input{
+  flex:1;min-width:120px;background:transparent;border:none;outline:none;
+  color:#f4f5f6;font-size:14px;
+}
+.sched-presets{display:flex;gap:5px;flex-wrap:wrap;}
+.sched-preset{
+  cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;
+  padding:4px 8px;border-radius:6px;
+  border:1px solid rgba(255,255,255,0.12);color:#9a9da3;
+  background:transparent;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.sched-preset.active{border-color:#c4f82a;color:#c4f82a;background:rgba(196,248,42,0.08);}
+.sched-preset:hover{border-color:rgba(255,255,255,0.25);}
+.sched-custom-dur{
+  width:50px;background:#1c1f22;border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px;padding:4px 6px;color:#f4f5f6;
+  font-family:'JetBrains Mono',monospace;font-size:10px;text-align:center;outline:none;
+}
+.sched-custom-dur:focus{border-color:rgba(196,248,42,0.5);}
+.sched-custom-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:#6b6e74;}
+.sched-add-btn{
+  cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:#c4f82a;border:1px solid rgba(196,248,42,0.4);border-radius:6px;
+  padding:5px 11px;background:transparent;transition:all .15s;white-space:nowrap;
+}
+.sched-add-btn:hover{background:rgba(196,248,42,0.1);}
+
+@media(max-width:768px){
+  .sched-card{padding:14px 16px;gap:12px;}
+  .sched-ring{width:44px;height:44px;}
+  .sched-ring-time{font-size:10px;}
+  .sched-presets{gap:4px;}
+  .sched-btn{width:30px;height:30px;border-radius:7px;font-size:12px;}
+}
+
 /* ---- Quick Add ---- */
 .quick-add{
   display:flex;align-items:center;gap:12px;
@@ -273,7 +353,9 @@ input{font-family:inherit;}
 
 <script>
 const STORAGE_KEY = 'trio.app.v2';
+const SCHED_KEY = 'trio.schedule.v1';
 const PALETTE = ['#c4f82a','#9aa0a6','#5f6469','#7fb0ff','#ff9b73','#c9a8ff','#6ee7b7'];
+const PRESETS = [15, 30, 45, 60, 90, 120];
 
 const DEFAULT_TASKS = [
   {id:1, title:'Send Q3 proposal to Henderson Co.', project:'Freelance', due:'2:00 PM', when:'today', done:false},
@@ -306,6 +388,11 @@ let state = {
   newProjDraft: '',
   goal: 3,
   sidebarOpen: false,
+  schedule: [],
+  nextSchedId: 1,
+  schedDraft: '',
+  schedDuration: 30,
+  schedCustom: '',
 };
 
 function load() {
@@ -327,6 +414,102 @@ function load() {
 
 function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks: state.tasks, projects: state.projects })); } catch(e) {}
+}
+
+function saveSched() {
+  try {
+    const data = state.schedule.map(s => ({
+      id: s.id, title: s.title, duration: s.duration,
+      remaining: s.remaining, status: s.status === 'running' ? 'paused' : s.status
+    }));
+    localStorage.setItem(SCHED_KEY, JSON.stringify(data));
+  } catch(e) {}
+}
+
+function loadSched() {
+  try {
+    const raw = localStorage.getItem(SCHED_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (Array.isArray(d) && d.length) {
+      state.schedule = d.map(s => ({...s, status: s.status || 'idle'}));
+      state.nextSchedId = Math.max(...d.map(s => s.id)) + 1;
+    }
+  } catch(e) {}
+}
+
+let timerInterval = null;
+
+function tickTimer() {
+  const running = state.schedule.find(s => s.status === 'running');
+  if (!running) { clearInterval(timerInterval); timerInterval = null; return; }
+  running.remaining = Math.max(0, running.remaining - 1);
+  if (running.remaining <= 0) {
+    running.status = 'finished';
+    saveSched();
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('TRIO', { body: running.title + ' — time\'s up!' });
+    }
+  }
+  render();
+}
+
+function ensureTimer() {
+  if (timerInterval) return;
+  timerInterval = setInterval(tickTimer, 1000);
+}
+
+function addSchedTask() {
+  const v = (state.schedDraft || '').trim();
+  if (!v) return;
+  let dur = state.schedDuration;
+  const custom = parseInt(state.schedCustom, 10);
+  if (custom > 0) dur = custom;
+  state.schedule.push({
+    id: state.nextSchedId, title: v,
+    duration: dur * 60, remaining: dur * 60, status: 'idle'
+  });
+  state.nextSchedId++;
+  state.schedDraft = '';
+  state.schedCustom = '';
+  saveSched(); render();
+}
+
+function startSchedTask(id) {
+  if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+  state.schedule.forEach(s => { if (s.status === 'running') s.status = 'paused'; });
+  const t = state.schedule.find(s => s.id === id);
+  if (t && t.status !== 'finished') { t.status = 'running'; ensureTimer(); }
+  saveSched(); render();
+}
+
+function pauseSchedTask(id) {
+  const t = state.schedule.find(s => s.id === id);
+  if (t) t.status = 'paused';
+  saveSched(); render();
+}
+
+function resetSchedTask(id) {
+  const t = state.schedule.find(s => s.id === id);
+  if (t) { t.remaining = t.duration; t.status = 'idle'; }
+  saveSched(); render();
+}
+
+function deleteSchedTask(id) {
+  state.schedule = state.schedule.filter(s => s.id !== id);
+  saveSched(); render();
+}
+
+function fmtTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function fmtDuration(secs) {
+  const m = Math.round(secs / 60);
+  if (m >= 60) return (m / 60) + 'h';
+  return m + 'm';
 }
 
 function esc(s) {
@@ -474,6 +657,66 @@ function renderQuickAdd(placeholder) {
   </div>`;
 }
 
+function renderSchedule() {
+  const cards = state.schedule.map(s => {
+    const pct = s.duration > 0 ? s.remaining / s.duration : 0;
+    const r = 20;
+    const circ = 2 * Math.PI * r;
+    const dash = circ * pct;
+    const ringColor = s.status === 'finished' ? '#c4f82a' : s.status === 'running' ? '#c4f82a' : '#5a5d63';
+    const trailColor = 'rgba(255,255,255,0.06)';
+    const timeStr = s.status === 'finished' ? 'Done' : fmtTime(s.remaining);
+    const metaStr = s.status === 'running' ? 'Running' : s.status === 'paused' ? 'Paused · ' + fmtDuration(s.duration) : s.status === 'finished' ? 'Completed' : fmtDuration(s.duration);
+
+    let btns = '';
+    if (s.status === 'idle') {
+      btns = `<button class="sched-btn sched-btn-play" data-action="start-sched" data-sched-id="${s.id}" title="Start">&#9654;</button>`;
+    } else if (s.status === 'running') {
+      btns = `<button class="sched-btn sched-btn-pause" data-action="pause-sched" data-sched-id="${s.id}" title="Pause">&#9646;&#9646;</button>`;
+    } else if (s.status === 'paused') {
+      btns = `<button class="sched-btn sched-btn-play" data-action="start-sched" data-sched-id="${s.id}" title="Resume">&#9654;</button>`;
+    }
+    if (s.status !== 'idle') {
+      btns += `<button class="sched-btn sched-btn-reset" data-action="reset-sched" data-sched-id="${s.id}" title="Reset">&#8635;</button>`;
+    }
+    btns += `<button class="sched-btn sched-btn-del" data-action="delete-sched" data-sched-id="${s.id}" title="Remove">&times;</button>`;
+
+    return `<div class="sched-card ${s.status}">
+      <div class="sched-ring">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="${r}" fill="none" stroke="${trailColor}" stroke-width="4"/>
+          <circle cx="26" cy="26" r="${r}" fill="none" stroke="${ringColor}" stroke-width="4"
+            stroke-dasharray="${dash} ${circ - dash}" stroke-linecap="round"/>
+        </svg>
+        <div class="sched-ring-time">${timeStr}</div>
+      </div>
+      <div class="sched-info">
+        <div class="sched-title">${esc(s.title)}</div>
+        <div class="sched-meta">${metaStr}</div>
+      </div>
+      <div class="sched-actions">${btns}</div>
+    </div>`;
+  }).join('');
+
+  const presetBtns = PRESETS.map(p => {
+    const lbl = p >= 60 ? (p / 60) + 'h' : p + 'm';
+    const active = (!state.schedCustom && state.schedDuration === p) ? ' active' : '';
+    return `<button class="sched-preset${active}" data-action="set-sched-duration" data-dur="${p}">${lbl}</button>`;
+  }).join('');
+
+  return `<div class="sched-section">
+    <div class="task-list-label">Schedule · focus timer</div>
+    <div class="sched-cards">${cards}</div>
+    <div class="sched-add">
+      <input type="text" placeholder="Task name..." value="${esc(state.schedDraft)}" data-action="sched-draft-input">
+      <div class="sched-presets">${presetBtns}</div>
+      <input type="number" class="sched-custom-dur" placeholder="min" value="${esc(state.schedCustom)}" min="1" max="480" data-action="sched-custom-input">
+      <span class="sched-custom-label">min</span>
+      <button class="sched-add-btn" data-action="add-sched">+ Add</button>
+    </div>
+  </div>`;
+}
+
 function renderToday() {
   const today = state.tasks.filter(t => t.when === 'today');
   const doneToday = today.filter(t => t.done).length;
@@ -511,6 +754,7 @@ function renderToday() {
       <div class="goal-segments">${segments}</div>
       <div class="goal-sub">${esc(subText)}</div>
     </div>
+    ${renderSchedule()}
     ${renderQuickAdd('Quick add — type a task, press Enter')}
     <div>
       <div class="task-list-label">Today's tasks · click to edit</div>
@@ -705,6 +949,12 @@ document.addEventListener('click', e => {
     case 'delete-proj': deleteProject(projId); break;
     case 'start-edit-proj': startEditProj(projId, el.dataset.projName); break;
     case 'add-proj': addProject(); break;
+    case 'start-sched': startSchedTask(Number(el.dataset.schedId)); break;
+    case 'pause-sched': pauseSchedTask(Number(el.dataset.schedId)); break;
+    case 'reset-sched': resetSchedTask(Number(el.dataset.schedId)); break;
+    case 'delete-sched': deleteSchedTask(Number(el.dataset.schedId)); break;
+    case 'add-sched': addSchedTask(); break;
+    case 'set-sched-duration': state.schedDuration = Number(el.dataset.dur); state.schedCustom = ''; render(); break;
   }
 });
 
@@ -717,6 +967,8 @@ document.addEventListener('input', e => {
     case 'task-edit': state.taskEditDraft = e.target.value; break;
     case 'proj-edit': state.projEditDraft = e.target.value; break;
     case 'new-proj-input': state.newProjDraft = e.target.value; break;
+    case 'sched-draft-input': state.schedDraft = e.target.value; break;
+    case 'sched-custom-input': state.schedCustom = e.target.value; break;
   }
 });
 
@@ -736,6 +988,8 @@ document.addEventListener('keydown', e => {
     else if (e.key === 'Escape') { state.editingProjId = null; state.projEditDraft = ''; render(); }
   } else if (action === 'new-proj-input' && e.key === 'Enter') {
     addProject();
+  } else if (action === 'sched-draft-input' && e.key === 'Enter') {
+    addSchedTask();
   }
 });
 
@@ -753,6 +1007,8 @@ document.addEventListener('blur', e => {
 }, true);
 
 load();
+loadSched();
+if (state.schedule.some(s => s.status === 'running')) ensureTimer();
 render();
 </script>
 </body>
